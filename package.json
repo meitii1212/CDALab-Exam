@@ -1,0 +1,19 @@
+{
+	"name": "cda-lab-exam",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"bootstrap": "lerna bootstrap",
+		"postinstall": "npm run bootstrap",
+		"start": "lerna run start --parallel"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"lerna": "^5.1.8",
+		"nx": "14.2.2"
+	}
+}
