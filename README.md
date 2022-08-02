@@ -13,7 +13,7 @@ While no previous background is required to complete this task or to apply to th
 
 ## Getting Started
 
-1. Make sure you have _Node.js_ 10 or higher and _npm_ 6 or higher installed
+1. Make sure you have _Node.js_ 16 or higher and _npm_ 8 or higher installed
 2. Install the project dependencies by running `npm install` from the project's directory (using a terminal)
 3. Run the project by running `npm start`
 
