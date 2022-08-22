@@ -57,7 +57,52 @@ body {
 		cursor: pointer;
 		font-weight: 500;
 		font-size: 12px;
+		
 	}
+
+
+	.button{
+
+		border: none;
+		color: #046daf;
+		text-align: center;
+		width:10%;
+		height:10%;
+		background-color: white;
+		margin-left: -18px;
+		margin-top:4px;
+		font-size:15px;
+		text-decoration:solid;
+		font-weight: bold;
+		
+		&:hover {
+		text-decoration:underline;	
+		}
+	}
+
+
+
+	//==================  buttons:=================
+
+	#restore_button{
+		margin-left:950px;
+		width:100px;
+		height:40px;
+		background-color: #1a609d;
+		color:white;
+		margin-bottom: 40px;
+		border-radius: 2px;
+
+	}
+
+	
+	#pin_button{
+		margin-left:950px;
+		background-color: none;
+		width: 10px;
+
+	}
+
 
 	.tickets {
 		margin: 0;

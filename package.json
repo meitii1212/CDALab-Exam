@@ -15,5 +15,10 @@
 	"devDependencies": {
 		"lerna": "^5.1.8",
 		"nx": "14.2.2"
+	},
+	"dependencies": {
+		"@types/react-show-more-text": "^1.4.2",
+		"react-show-more-text": "^1.5.2",
+		"react-text-trim": "^1.0.3"
 	}
 }

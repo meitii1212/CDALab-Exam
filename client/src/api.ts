@@ -8,7 +8,11 @@ export type Ticket = {
 	creationTime: number;
 	userEmail: string;
 	labels?: string[];
+	isPinned:  boolean
 };
+
+
+
 
 export type ApiClient = {
 	getTickets: () => Promise<Ticket[]>;
