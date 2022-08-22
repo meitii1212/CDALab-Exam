@@ -8,9 +8,8 @@ import ShowMoreText from "react-show-more-text";
 export type AppState = {
 	tickets?: Ticket[];
 	search: string;
-	pinned_tickets: Ticket[];  //array for the pinned
-	isPinnedArray: boolean[] 
-	//[boolean[], React.Dispatch<React.SetStateAction<boolean[]>>]
+	pinned_tickets: Ticket[];  //array for the pinned tickets that will be able to be restored
+
 	
 };
 
@@ -23,7 +22,7 @@ export class App extends React.PureComponent<{}, AppState> {
 	state: AppState = {
 		search: '',
 		pinned_tickets: [],
-		isPinnedArray:[],
+
 	
 		
 		
@@ -79,8 +78,8 @@ export class App extends React.PureComponent<{}, AppState> {
 
 						{ ticket.isPinned 
 						
-						? <img className='pin_photo'  src={pin_tag} alt="bla" width={52} height={54}/>
-					    : <button id="pin_button" className='button' onClick={() => this.handlePin(ticket,this.state.tickets)}> PIN</button>
+						? <img id='pin_photo'  src={pin_tag} alt="bla" width={52} height={54} onClick={() => this.handlePin(ticket)} />
+					    : <button id="pin_button" className='button' onClick={() => this.handlePin(ticket)}> PIN</button>
 						}
 						<h5 className='title'>{ticket.title}</h5>
 
@@ -112,46 +111,82 @@ export class App extends React.PureComponent<{}, AppState> {
 
 	//=========== HELPER FUNCTIONS =========== 
 
-	showPin = (ticket: Ticket) =>{
-		return ticket.isPinned;
-	}
 
-
-	handlePin= (ticket: Ticket,tickets: Ticket[] | undefined) =>{
+	handlePin= (ticket: Ticket) =>{
 		console.log("pinning");
-		ticket.isPinned= true;
-	
-		if(!tickets){
+		
+		if(!this.state.tickets){
 			console.log("no data")
 			return
 		}
+		//finding the item 
+		let index = this.state.tickets.findIndex(x => x.id === ticket.id)
+		var new_pinned_tickets = Array<Ticket>();
+		var new_tickets = Array<Ticket>();
 
+		//CASE1 - if wasnt pinned:
+		if(!ticket.isPinned){
+		ticket.isPinned= true;
 		//changing the tickets list order so the pinned items will be first according to the pinning order.
-		let index = tickets.findIndex(x => x.id === ticket.id)
 
-		var tickets2 = Array<Ticket>();
-		tickets2[0] = ticket
-		for (var _i = 0; _i < tickets.length; _i++) {
+		
+		new_tickets[0] = ticket
+		for (var _i = 0; _i < this.state.tickets.length; _i++) {
 			if(_i < index){
-			tickets2[_i+1] = tickets[_i]}
+				new_tickets[_i+1] = this.state.tickets[_i]}
 
 			if(_i  === index){
 				continue
 			}
 			if(_i > index){
-				tickets2[_i] = tickets[_i]}
+				new_tickets[_i] = this.state.tickets[_i]}
 
 	
 		}
 
+		//updating the restored tickets list
+
+		new_pinned_tickets = [...this.state.pinned_tickets.slice(0)]
+		new_pinned_tickets.push(ticket)
+
+		}
+
+		else{
+
+			console.log("un-pinning");
+			ticket.isPinned= false;
+
+			//changing the tickets list order so the pinned items will be last according to the pinning order.
+
+			for (var _j = 0; _j < this.state.tickets.length; _j++) {
+				if(_j < index){
+					new_tickets[_j] = this.state.tickets[_j]}
+
+				if(_j  === index){
+					continue
+				}
+				if(_j > index){
+					new_tickets[_j-1] = this.state.tickets[_j]}
+
+		
+			}
+		
+		new_tickets.push(ticket)
+		//updating the restored tickets list
+		new_pinned_tickets = [...this.state.pinned_tickets.slice(0)]
+		new_pinned_tickets= new_pinned_tickets.filter((x:Ticket)=> x.id !== ticket.id)
+
+		}
+
+
+		//=== SAVING CHANGES AND WRITING TO MEMORY ===== 
 	
 		this.setState({
-			tickets: tickets2,
+			tickets: new_tickets,
+			pinned_tickets: new_pinned_tickets,
 		});
 		
-		console.log("handle pin state.tickets")
-		console.log(this.state.tickets);
-		this.render()
+
 		};
 	onSearch = async (val: string, newPage?: number) => {
 		clearTimeout(this.searchDebounce);
