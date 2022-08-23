@@ -15,13 +15,20 @@ export type Ticket = {
 
 
 export type ApiClient = {
-	getTickets: () => Promise<Ticket[]>;
+	getTickets: (page?:number) => Promise<Ticket[]>;
+	//storeTickets: () =>void
 };
 
 export const createApiClient = (): ApiClient => {
 	return {
-		getTickets: () => {
-			return axios.get(APIRootPath).then((res) => res.data);
+		getTickets: (page?:number) => {
+			return axios.get(APIRootPath,{params:{page:page}}).then((res) => res.data);
 		},
+
+		// storeTickets: (pinned_tickets_list: Array<Ticket>) =>{
+
+		// 	return axios.post(APIRootPath,{body:{tickets:pinned_tickets_list}}).then((res) => res.data);
+		// },
+
 	};
 };

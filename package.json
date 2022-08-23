@@ -17,6 +17,7 @@
 		"nx": "14.2.2"
 	},
 	"dependencies": {
+		"@types/react-infinite-scroll-component": "^5.0.0",
 		"@types/react-show-more-text": "^1.4.2",
 		"react-show-more-text": "^1.5.2",
 		"react-text-trim": "^1.0.3"

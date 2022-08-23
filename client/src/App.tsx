@@ -3,12 +3,14 @@ import './App.scss';
 import { createApiClient, Ticket } from './api';
 import pin_tag from './pin.jpg';
 import ShowMoreText from "react-show-more-text";
-
+import InfiniteScroll from 'react-infinite-scroll-component';
 
 export type AppState = {
 	tickets?: Ticket[];
 	search: string;
 	pinned_tickets: Ticket[];  //array for the pinned tickets that will be able to be restored
+	next_data?:Ticket[];
+	page_number:number;
 
 	
 };
@@ -22,36 +24,35 @@ export class App extends React.PureComponent<{}, AppState> {
 	state: AppState = {
 		search: '',
 		pinned_tickets: [],
-
-	
-		
-		
+		next_data:[],
+		page_number:1,
 
 	};
-
-	//const [ show,More,setShowMore] = useState(false);
 
 	searchDebounce: any = null;
 
 	async componentDidMount() {
 		console.log("start mount")
 		let tickets_from_server = Array<Ticket>();
-		tickets_from_server = await api.getTickets()
-
+		tickets_from_server = await api.getTickets(1);
+		let next_tickets = Array<Ticket>();
+		next_tickets = await api.getTickets(2);
 		const fullTickets = tickets_from_server.map(({id, title,content,userEmail,creationTime}: Ticket) => ({id, title,content,userEmail,creationTime,isPinned: false}))
-
+		
+		console.log("%%%next tickets");
+		console.log(next_tickets);
 
 		this.setState({
 			//tickets: await api.getTickets(),
 			tickets: fullTickets,
+			next_data:next_tickets,
 		});
 	
 	}
 
 	executeOnClick(isExpanded :boolean) {
         console.log(isExpanded);
-    }
-
+    } 
 
 
 	
@@ -71,7 +72,35 @@ export class App extends React.PureComponent<{}, AppState> {
 		console.log(this.state.tickets);
 		return (
 
+
+		<InfiniteScroll 
+				
+			style={{
+				
+				width:"104%"
+			}}
+			dataLength={tickets.length*100} //This is important field to render the next data
+			next={this.getNextPage}
+			hasMore={true}
+			loader={<h4>Loading...</h4>}
+			endMessage={
+				<p style={{ textAlign: 'center' }}>
+				<b>Yay! You have seen it all</b>
+				</p>
+			}
 			
+			scrollableTarget="scrollableDiv"
+			//below props only if you need pull down functionality
+			refreshFunction={this.render}
+			pullDownToRefresh
+			pullDownToRefreshThreshold={50}
+			pullDownToRefreshContent={
+				<h3 style={{ textAlign: 'center' }}>&#8595; Pull down to refresh</h3>
+			}
+			releaseToRefreshContent={
+				<h3 style={{ textAlign: 'center' }}>&#8593; Release to refresh</h3>
+			}
+			>
 			<ul className='tickets'>
 				{filteredTickets.map((ticket) => (
 					<li key={ticket.id} className='ticket' >
@@ -81,6 +110,9 @@ export class App extends React.PureComponent<{}, AppState> {
 						? <img id='pin_photo'  src={pin_tag} alt="bla" width={52} height={54} onClick={() => this.handlePin(ticket)} />
 					    : <button id="pin_button" className='button' onClick={() => this.handlePin(ticket)}> PIN</button>
 						}
+
+						<button id="clone_button" className='button' onClick={() => this.handlePin(ticket)}> Clone</button>
+
 						<h5 className='title'>{ticket.title}</h5>
 
 						<ShowMoreText
@@ -98,14 +130,20 @@ export class App extends React.PureComponent<{}, AppState> {
 				</ShowMoreText>
 
 							<footer>
+
 							<div className='meta-data'>
 								By {ticket.userEmail} |{' '}
 								{new Date(ticket.creationTime).toLocaleString()}
 							</div>
+
+
 						</footer>
 					</li>
 				))}
 			</ul>
+
+			</InfiniteScroll>
+		
 		);
 	};
 
@@ -127,6 +165,7 @@ export class App extends React.PureComponent<{}, AppState> {
 		//CASE1 - if wasnt pinned:
 		if(!ticket.isPinned){
 		ticket.isPinned= true;
+
 		//changing the tickets list order so the pinned items will be first according to the pinning order.
 
 		
@@ -199,6 +238,48 @@ export class App extends React.PureComponent<{}, AppState> {
 	};
 
 
+	getNextPage = async()=>{
+		console.log("%%%inside next page ")
+		
+		if(!this.state.tickets){
+		 	console.log("page number problem")
+			return
+		 }
+		else{
+
+			console.log(this.state.tickets)
+			console.log("curr page number is:"+ this.state.page_number)
+		let new_page_num = (this.state.page_number) +1;
+		console.log("next page number is:"+ new_page_num)
+
+		//let next_tickets1 = Array<Ticket>();
+		let tickets1 = Array<Ticket>();
+		let old_tickets = Array<Ticket>(); 
+
+		for (var _y = 0; _y < this.state.tickets.length; _y++) {
+			old_tickets[_y] = this.state.tickets[_y]
+		}
+
+		tickets1 = await api.getTickets(new_page_num);
+		//next_tickets1 = await api.getTickets(new_page_num+1);
+		tickets1 = old_tickets.concat(tickets1)
+		console.log("merged")
+		console.log(tickets1)
+		setTimeout(() => {
+			this.setState({
+			  tickets: tickets1,
+			  page_number: new_page_num,
+
+			});
+		  }, 1500);
+		};
+
+
+	};
+
+
+
+
 
 
 	render() {
@@ -210,9 +291,10 @@ export class App extends React.PureComponent<{}, AppState> {
 		return (
 			<main>
 				<h1>Tickets List</h1>
-				<button id="restore_button" className='button' > Restore </button>
+				<button id="restore_button" className='button' > My Favorite Tickets </button>
 				<header>
 					<input
+						id= "search_input"
 						type='search'
 						placeholder='Search...'
 						onChange={(e) => this.onSearch(e.target.value)}

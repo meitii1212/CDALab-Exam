@@ -22,7 +22,7 @@ body {
 	}
 
 	header {
-		width: 100%;
+		width: 99%;
 		flex-shrink: 0;
 		border-radius: 6px;
 		background-color: #fff;
@@ -84,35 +84,50 @@ body {
 
 	//==================  buttons:=================
 
+
 	#restore_button{
-		margin-left:950px;
-		width:100px;
-		height:40px;
+		margin-left:900px;
+		width:135px;
+		height: 55px;
 		background-color: #1a609d;
 		color:white;
-		margin-bottom: 40px;
+		margin-top: -60px;
+		margin-bottom: 50px;
 		border-radius: 2px;
-
+		font-size: large;
 	}
 
 	#pin_photo{
 
-		margin-left:950px;
+		margin-left:935px;
 	}
 	#pin_button{
-		margin-left:950px;
+		margin-left:935px;
 		background-color: none;
-		width: 10px;
+		width: 55px;
+		height:40px;
+		background-color: #cfddec;
+		 border-radius: 3px;
 
 	}
 
+	#clone_button{
+		font-size: 17px;
+		margin-top: -40px;
+		margin-left:850px;
+		background-color: none;
+		width: 65px;
+		height:40px;
+		background-color: #cfddec;
+		border-radius: 3px;
+	}
 
 	.tickets {
 		margin: 0;
 		padding: 0;
 
 		.ticket {
-			width: 100%;
+			width: 95%;
 			flex-shrink: 0;
 			border-radius: 8px;
 			background-color: #fff;
