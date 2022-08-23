@@ -5,6 +5,7 @@ import pin_tag from './pin.jpg';
 import ShowMoreText from "react-show-more-text";
 import InfiniteScroll from 'react-infinite-scroll-component';
 
+
 export type AppState = {
 	tickets?: Ticket[];
 	search: string;
@@ -29,6 +30,7 @@ export class App extends React.PureComponent<{}, AppState> {
 
 	};
 
+	filteredTickets = new Array<Ticket>();
 	searchDebounce: any = null;
 
 	async componentDidMount() {
@@ -58,18 +60,83 @@ export class App extends React.PureComponent<{}, AppState> {
 	
 	renderTickets = (tickets: Ticket[]) => {
 		
-	
+		// ======== add filtering options ===== 
+
 		console.log("render tickets")
-		const filteredTickets = tickets.filter((t) =>
-			(t.title.toLowerCase() + t.content.toLowerCase()).includes(
-				this.state.search.toLowerCase()
-			)
-		);
+		//after date 
+		if(this.state.search.toLowerCase().startsWith("after:")&& this.state.search.charAt(8)==="/" && this.state.search.charAt(11)==="/" && this.state.search.charAt(16)===" "){
+			
+			//if(!isNaN(Number(this.state.search.slice(6,8))) && !isNaN(Number(this.state.search.slice(9,11))) && !isNaN(Number(this.state.search.slice(12,16))) ){
+				console.log("=====> after string good2223333")
+				//console.log("=====> string good2")
+				let given_date = new Date(this.state.search.slice(6,16))
+				console.log(given_date)
+				this.filteredTickets = tickets.filter((t) =>
+				(   t.title.toLowerCase() + t.content.toLowerCase()).includes(
+					this.state.search.toLowerCase().slice(16)
+				)&&
+				((new Date(t.creationTime))>(given_date)));
+			
+			
+			//}
+			}
+
+
+			// //before date 
+			else if(this.state.search.toLowerCase().startsWith("before:")&& this.state.search.charAt(9)==="/" && this.state.search.charAt(12)==="/" && this.state.search.charAt(17)===" "){
+		
+				//if(!isNaN(Number(this.state.search.slice(6,8))) && !isNaN(Number(this.state.search.slice(9,11))) && !isNaN(Number(this.state.search.slice(12,16))) ){
+					console.log("=====> before string good333")
+					//console.log("=====> string good2")
+					let given_date = new Date(this.state.search.slice(7,17))
+	
+					this.filteredTickets = tickets.filter((t) =>
+					(   t.title.toLowerCase() + t.content.toLowerCase()).includes(
+						this.state.search.toLowerCase().slice(18)
+					)&&
+					((new Date(t.creationTime))<(given_date)));
 				
-		console.log("filtered tickets in render tickets ")
-		console.log(filteredTickets)
+				
+				//}
+			}
+
+			//from email 
+			else if(this.state.search.toLowerCase().startsWith("from:")&& this.state.search.slice(5).includes("@")&&this.state.search.includes(" ",5) ){
+
+					let str_index = this.state.search.indexOf(" ") +1
+					let str_mail = this.state.search.slice(5,str_index-1)
+					console.log("=====> from string good444")
+					console.log(this.state.search.toLowerCase().slice(str_index))
+					console.log(str_mail)
+					this.filteredTickets = tickets.filter((t) =>
+					(   t.title.toLowerCase() + t.content.toLowerCase()).includes(
+						this.state.search.toLowerCase().slice(str_index)
+					)&&
+					(t.userEmail===str_mail));
+				
+				
+				//}
+			}
+
+		// general search
+
+		else{	
+			console.log("general")
+		this.filteredTickets = tickets.filter((t) =>
+		(   t.title.toLowerCase() + t.content.toLowerCase()).includes(
+			this.state.search.toLowerCase()	
+		));
+
+		}
+
+
+				
+		console.log(" filtered tickets in render tickets ")
+		console.log(this.filteredTickets)
 		console.log("state tickets in render tickets ")
 		console.log(this.state.tickets);
+
+
 		return (
 
 
@@ -91,7 +158,7 @@ export class App extends React.PureComponent<{}, AppState> {
 			
 			scrollableTarget="scrollableDiv"
 			//below props only if you need pull down functionality
-			refreshFunction={this.render}
+			refreshFunction={this.getNextPage}
 			pullDownToRefresh
 			pullDownToRefreshThreshold={50}
 			pullDownToRefreshContent={
@@ -102,7 +169,7 @@ export class App extends React.PureComponent<{}, AppState> {
 			}
 			>
 			<ul className='tickets'>
-				{filteredTickets.map((ticket) => (
+				{this.filteredTickets.map((ticket) => (
 					<li key={ticket.id} className='ticket' >
 
 						{ ticket.isPinned 
@@ -300,8 +367,9 @@ export class App extends React.PureComponent<{}, AppState> {
 						onChange={(e) => this.onSearch(e.target.value)}
 					/>
 				</header>
-				{tickets ? <div className='results'>Showing {tickets.length} results</div> : null}
+				{tickets ? <div className='results'>filtered {this.filteredTickets.length} from {tickets.length} results</div> : null}
 				{tickets ? this.renderTickets(tickets) : <h2>Loading..</h2>}
+				<p> Scroll down for more results! (maximum: 200) </p>
 			</main>
 		);
 	}
