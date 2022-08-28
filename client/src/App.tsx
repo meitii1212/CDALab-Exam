@@ -4,6 +4,7 @@ import { createApiClient, Ticket } from './api';
 import pin_tag from './pin.jpg';
 import ShowMoreText from "react-show-more-text";
 import InfiniteScroll from 'react-infinite-scroll-component';
+import { isConstructorDeclaration } from 'typescript';
 
 
 export type AppState = {
@@ -12,6 +13,8 @@ export type AppState = {
 	pinned_tickets: Ticket[];  //array for the pinned tickets that will be able to be restored
 	next_data?:Ticket[];
 	page_number:number;
+	clones:number;
+
 
 	
 };
@@ -27,7 +30,9 @@ export class App extends React.PureComponent<{}, AppState> {
 		pinned_tickets: [],
 		next_data:[],
 		page_number:1,
-
+		clones:0,
+	
+	
 	};
 
 	filteredTickets = new Array<Ticket>();
@@ -63,6 +68,8 @@ export class App extends React.PureComponent<{}, AppState> {
 		// ======== add filtering options ===== 
 
 		console.log("render tickets")
+
+		
 		//after date 
 		if(this.state.search.toLowerCase().startsWith("after:")&& this.state.search.charAt(8)==="/" && this.state.search.charAt(11)==="/" && this.state.search.charAt(16)===" "){
 			
@@ -130,7 +137,7 @@ export class App extends React.PureComponent<{}, AppState> {
 		}
 
 
-				
+
 		console.log(" filtered tickets in render tickets ")
 		console.log(this.filteredTickets)
 		console.log("state tickets in render tickets ")
@@ -171,14 +178,15 @@ export class App extends React.PureComponent<{}, AppState> {
 			<ul className='tickets'>
 				{this.filteredTickets.map((ticket) => (
 					<li key={ticket.id} className='ticket' >
-
+						
+						<button id="delete_button" className='button' onClick={() => this.deleteTicket(ticket)}>Delete</button>
 						{ ticket.isPinned 
 						
 						? <img id='pin_photo'  src={pin_tag} alt="bla" width={52} height={54} onClick={() => this.handlePin(ticket)} />
 					    : <button id="pin_button" className='button' onClick={() => this.handlePin(ticket)}> PIN</button>
 						}
 
-						<button id="clone_button" className='button' onClick={() => this.handlePin(ticket)}> Clone</button>
+						<button id="clone_button" className='button' onClick={() => this.cloneTicket(ticket)}> Clone</button>
 
 						<h5 className='title'>{ticket.title}</h5>
 
@@ -217,7 +225,7 @@ export class App extends React.PureComponent<{}, AppState> {
 	//=========== HELPER FUNCTIONS =========== 
 
 
-	handlePin= (ticket: Ticket) =>{
+	handlePin= async(ticket: Ticket) =>{
 		console.log("pinning");
 		
 		if(!this.state.tickets){
@@ -255,8 +263,15 @@ export class App extends React.PureComponent<{}, AppState> {
 		new_pinned_tickets = [...this.state.pinned_tickets.slice(0)]
 		new_pinned_tickets.push(ticket)
 
-		}
+		// try{
+			
+		// 	await api.storeFavourites(ticket)
 
+		// }catch(err){
+		// 	console.log("problem in server: store favourites")
+		// 	console.error(err)
+		// }
+	}
 		else{
 
 			console.log("un-pinning");
@@ -304,7 +319,93 @@ export class App extends React.PureComponent<{}, AppState> {
 		}, 300);
 	};
 
+	cloneTicket = async(ticket: Ticket)=>{
+		if(!this.state.tickets){
+			console.log("no data")
+			return
+		}
 
+		console.log("start cloning")
+		let index = this.state.tickets.findIndex(x => x.id === ticket.id)
+		
+		let copy_ticket:  Ticket;
+		copy_ticket = {
+			id: this.state.clones.toString(),
+			title:ticket.title,
+			content: ticket.content,
+			userEmail: ticket.userEmail,
+			creationTime: ticket.creationTime,
+			isPinned:false,
+		}
+		
+		console.log("ticket_id" + ticket.id)
+		//console.log(ticket)
+		console.log(copy_ticket)
+
+		let new_tickets = new Array<Ticket>();
+		for (var _l = 0; _l < this.state.tickets.length; _l++) {
+			if(_l < index){
+				new_tickets[_l] = this.state.tickets[_l]
+			}
+			if( _l === index){
+				new_tickets[_l] = this.state.tickets[_l]
+				new_tickets[_l+1] = copy_ticket
+			}
+			if(_l > index){
+				new_tickets[_l+1] = this.state.tickets[_l]
+			}
+			
+		}
+
+		// saving data in server:
+		 await api.cloneTicket(copy_ticket)
+
+		let new_clones = this.state.clones + 1	
+
+			this.setState({
+				tickets: new_tickets,
+				clones: new_clones
+
+			});
+
+
+	};
+
+
+
+
+	deleteTicket = async(ticket:Ticket)=>{
+		let new_tickets = new Array<Ticket>();
+
+		if(!this.state.tickets){
+			return
+		}
+
+
+		const index =  this.state.tickets.indexOf(ticket)
+		for (var _l = 0; _l < this.state.tickets.length; _l++) {
+			if(_l < index){
+				new_tickets[_l] = this.state.tickets[_l]
+			}
+			if( _l === index){
+				continue
+			}
+			if(_l > index){
+				new_tickets[_l-1] = this.state.tickets[_l]
+			}
+			
+		}
+
+		await api.deleteTicket(ticket)
+
+		this.setState({
+			tickets: new_tickets,
+
+		  });
+
+	console.log("finish delete ticket")
+
+	}
 	getNextPage = async()=>{
 		console.log("%%%inside next page ")
 		
@@ -358,7 +459,7 @@ export class App extends React.PureComponent<{}, AppState> {
 		return (
 			<main>
 				<h1>Tickets List</h1>
-				<button id="restore_button" className='button' > My Favorite Tickets </button>
+				
 				<header>
 					<input
 						id= "search_input"

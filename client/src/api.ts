@@ -16,7 +16,9 @@ export type Ticket = {
 
 export type ApiClient = {
 	getTickets: (page?:number) => Promise<Ticket[]>;
-	//storeTickets: () =>void
+	cloneTicket:(ticket:Ticket) =>Promise<boolean>;
+	deleteTicket: (ticket:Ticket) =>Promise<boolean>;
+	// getFavourites: (page?:number) => Promise<Ticket[]>;
 };
 
 export const createApiClient = (): ApiClient => {
@@ -25,9 +27,18 @@ export const createApiClient = (): ApiClient => {
 			return axios.get(APIRootPath,{params:{page:page}}).then((res) => res.data);
 		},
 
-		// storeTickets: (pinned_tickets_list: Array<Ticket>) =>{
+		cloneTicket: (ticket:Ticket) =>{
 
-		// 	return axios.post(APIRootPath,{body:{tickets:pinned_tickets_list}}).then((res) => res.data);
+			return axios.post(APIRootPath,{ticket:ticket}).then((res) => res.data);
+		},
+
+		deleteTicket: (ticket:Ticket) =>{
+
+			return axios.put(APIRootPath,{ticket:ticket}).then((res) => res.data);
+		},
+
+		// getFavourites: (page?:number) => {
+		// 	return axios.get(APIRootPath+"/fav",{params:{page:page}}).then((res) => res.data);
 		// },
 
 	};
